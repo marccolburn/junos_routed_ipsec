@@ -51,7 +51,7 @@ Example Playbook
 
     - hosts: all
       roles:
-         - { role: junos_isis_config }
+         - { role: junos_routed_ipsec }
 
 License
 -------
