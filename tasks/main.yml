@@ -1,0 +1,10 @@
+---
+- name: Generate config local debug
+  template:
+    src: "route_based_ipsec.j2"
+    dest: "./debug_configs/{{ inventory_hostname }}.txt"
+
+- name: Configure Routed IPSEC
+  junos_config:
+    lines: "{{ lookup('template', 'route_based_ipsec.j2').split('\n') }}"
+    comment: Configure IPSec tunnels

@@ -1,0 +1,38 @@
+{% for tunnel in ipsec_route_vpns %}
+set interfaces st0 unit {{ tunnel.id }} family inet address {{ tunnel.address }} 
+set security zones security-zone {{ tunnel.physical_interface_zone }} host-inbound-traffic system-services ike 
+set security zones security-zone {{ tunnel.tunnel_zone }} interfaces st0.{{ tunnel.id }}
+{% endfor %}
+{% for proposal in ike_proposals %}
+set security ike proposal {{ proposal.name }} authentication-method {{ proposal.authmethod }}
+set security ike proposal {{ proposal.name }} dh-group {{ proposal.dhgroup }}
+set security ike proposal {{ proposal.name }} authentication-algorithm {{ proposal.auth_algorithm }}
+set security ike proposal {{ proposal.name }} encryption-algorithm {{ proposal.encrypt_algorithm }}
+{% endfor %}
+{% for policy in ike_policies %}
+set security ike policy {{ policy.name }} mode {{ policy.mode }}
+set security ike policy {{ policy.name }} proposals {{ policy.proposal }}
+{% if policy.key is defined %}
+set security ike policy {{ policy.name }} pre-shared-key ascii-text {{ policy.key }}
+{% endif %}
+{% endfor %}
+{% for gateway in ike_gateways %}
+set security ike gateway {{ gateway.name }} external-interface {{ gateway.ext_interface }}
+set security ike gateway {{ gateway.name }} ike-policy {{ gateway.ike_policy }}
+set security ike gateway {{ gateway.name }} address {{ gateway.address }}
+set security ike gateway {{ gateway.name }} version {{ gateway.version }}
+{% endfor %}
+{% for proposal in ipsec_proposals %}
+set security ipsec proposal {{ proposal.name }} protocol {{ proposal.protocol }}
+set security ipsec proposal {{ proposal.name }} authentication-algorithm {{ proposal.auth_algorithm }}
+set security ipsec proposal {{ proposal.name }} encryption-algorithm {{ proposal.encrypt_algorithm }}
+{% endfor %}
+{% for policy in ipsec_policies %}
+set security ipsec policy {{ policy.name }} proposals {{ policy.proposal }}
+{% endfor %}
+{% for vpn in ipsec_vpns %}
+set security ipsec vpn {{ vpn.name }} ike ipsec-policy {{ vpn.policy }}
+set security ipsec vpn {{ vpn.name }} bind-interface st0.{{ vpn.tunnel_id }}
+set security ipsec vpn {{ vpn.name }} ike gateway {{ vpn.ike_gateway }}
+{% endfor %}
+set security flow tcp-mss ipsec-vpn mss {{ ipsec_mss }}
